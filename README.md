@@ -11,7 +11,7 @@ Do not trust this script to keep your laptop cool. But when there is nothing els
 To install, just make the scripts executable, move them to /usr/local/bin/, and call fan.sh every minute from cron.
 
 There are 2 very basic scripts:
-- fan.sh : if above 60C (fixed value), pulse the fan for a second
+- fan.sh : if above 60C (configurable value), pulse the fan for a second (also configurable)
 - fanpulse.sh : just pulses the fan for a second
 
 ## todo
