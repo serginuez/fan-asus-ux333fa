@@ -12,11 +12,12 @@ activetime=1
 #
 ## code
 
-#read current cpu temperature. 
-curtemp=$(/usr/bin/sensors | grep pch_cannonlake -A2 | tr -s ' ' | tail -n 1 | cut -d'+' -f2 | cut -d'.' -f1)
+#read current cpu temperature.
+coretempval=$(cat /sys/devices/platform/coretemp.0/hwmon/hwmon*/temp1_input | head -n 1)
+curtemp=${coretempval::-3}
 
 #if it's above ${threshold}, pulse the fan for ${activetime} seconds
-if [ ${curtemp} -gt 60 ]
+if [ ${curtemp} -gt ${threshold} ]
 then
 	#TODO: if it's already on, we should do nothing, as the most probable thing is that it's been the user manually activating it
 	echo "0" > /sys/devices/platform/asus-nb-wmi/hwmon/hwmon*/pwm1_enable
