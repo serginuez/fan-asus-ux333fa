@@ -9,9 +9,13 @@ Do not trust this script to keep your laptop cool. But when there is nothing els
 
 ## installation and usage
 To install, just make the script executable, move it to /usr/local/bin/, and call fan.sh every minute from cron like this:
+```
 * * * * * /usr/local/bin/fan.sh cron > /dev/null 2>&1
+```
 
-Usage: /usr/local/bin/fan.sh [status|on|off|pulse|cron]
+Usage:
+```
+/usr/local/bin/fan.sh [status|on|off|pulse|cron]
 
 Script options:
 - status: displays the current fan status, on or off
@@ -19,7 +23,7 @@ Script options:
 - off: switches the fan off
 - pulse: pulses the fan for an amount of seconds (configurable value in the script)
 - cron: if above 60C (configurable value), pulse the fan for two seconds (also configurable)
-
+```
 
 ## todo
 - allow parametres for threshold temp and pulse time
