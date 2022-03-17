@@ -8,15 +8,13 @@ In the current kernel drivers at lest, there is no way to control the speed of t
 Do not trust this script to keep your laptop cool. But when there is nothing else...better than nothing
 
 ## installation and usage
-To install, just make the scripts executable, move them to /usr/local/bin/, and call fan.sh every minute from cron.
+To install, just make the scripts executable, move them to /usr/local/bin/, and call fan.sh every minute from cron like this:
+* * * * * /usr/local/bin/fan.sh cron > /dev/null 2>&1
 
 There are 2 very basic scripts:
 - fan.sh : if above 60C (configurable value), pulse the fan for a second (also configurable)
 - fanpulse.sh : just pulses the fan for a second
 
 ## todo
-- don't duplicate code (4 or 5 lines and half of them are duplicated)
 - merge scripts
-- enable some user config
-- make it useful?
-- 
+- ?

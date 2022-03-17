@@ -1,28 +1,126 @@
-#!/bin/bash
+#!/bin/sh
 
 #
 ## config
+###
 
 # Temperature threshold in Celsius
 threshold=60
 
 # Time to keep the fan on (will run at full speed)
-activetime=1
+activetime=2
 
 #
 ## code
+###
 
-#read current cpu temperature.
-coretempval=$(cat /sys/devices/platform/coretemp.0/hwmon/hwmon*/temp1_input | head -n 1)
-curtemp=${coretempval::-3}
+getfandata () {
+	# get which hwmon we have, as it changes and echoing to .../hwmon*/... would be a bashism
+	setmonid=$(ls /sys/devices/platform/asus-nb-wmi/hwmon/ | grep hwmon* | head -n 1)
+	getmonid=$(ls /sys/devices/platform/coretemp.0/hwmon/ | grep hwmon* | head -n 1)
+	# get current fan status
+	fanstatus=$(cat /sys/devices/platform/asus-nb-wmi/hwmon/${setmonid}/pwm1_enable)
+	# read current temperature
+	coretempval=$(cat /sys/devices/platform/coretemp.0/hwmon/${getmonid}/temp1_input | head -n 1)
+	curtemp=${coretempval%000}
+}
 
-#if it's above ${threshold}, pulse the fan for ${activetime} seconds
-if [ ${curtemp} -gt ${threshold} ]
-then
-	#TODO: if it's already on, we should do nothing, as the most probable thing is that it's been the user manually activating it
-	echo "0" > /sys/devices/platform/asus-nb-wmi/hwmon/hwmon*/pwm1_enable
+getstatus () {
+	if [ ${fanstatus} -eq 2 ]
+	then
+		echo "fan is stopped"
+	else
+		echo "fan is running"
+	fi
+}
+
+switch_on () {
+	getfandata
+        # if the fan is idle continue
+        if [ ${fanstatus} -eq 2 ]
+        then
+                echo "0" > /sys/devices/platform/asus-nb-wmi/hwmon/${setmonid}/pwm1_enable
+        else
+                # exit with errcode -1. Fan was already running
+                exit -1
+        fi
+}
+
+switch_off () {
+	getfandata
+        # if the fan is running continue
+        if [ ${fanstatus} -eq 0 ]
+        then
+                echo "2" > /sys/devices/platform/asus-nb-wmi/hwmon/${setmonid}/pwm1_enable
+        else
+                # exit with errcode -1. Fan was already stopped
+                exit -1
+        fi
+}
+
+exec_pulsefan () {
+	switch_on
 	sleep ${activetime}
-	echo "2" > /sys/devices/platform/asus-nb-wmi/hwmon/hwmon*/pwm1_enable
-fi
+	switch_off
+}
+
+cron () {
+	# if the fan is idle continue
+	if [ ${fanstatus} -eq 2 ]
+	then
+		# if it's above ${threshold}, pulse the fan for ${activetime} seconds
+		if [ ${curtemp} -gt ${threshold} ]
+		then
+			exec_pulsefan ${monid} ${activetime}
+		fi
+	else
+		# exit with errcode -1. Fan was already running
+		exit -1
+	fi
+}
+
+pulse () {
+	# if the fan is idle continue
+        if [ ${fanstatus} -eq 2 ]
+	then
+		exec_pulsefan ${monid} ${activetime}
+	else
+		# exit with errcode -1. Fan was already running
+                exit -1
+	fi
+}
+
+
+#
+## Main
+###
+
+option=$1
+getfandata
+
+case $option in
+	"on")
+		switch_on
+		;;
+	"off")
+		switch_off
+		;;
+	"status")
+		getstatus
+		;;
+	"pulse")
+		pulse
+		;;
+	"cron")
+		cron
+		;;
+	*)
+		echo "Wrong parameter(s)"
+		echo ""
+		echo "Usage: ${0} [on|off|status|pulse|cron]"
+		echo ""
+		echo ""
+		;;
+esac
 
 exit 0
