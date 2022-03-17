@@ -28,9 +28,9 @@ getfandata () {
 getstatus () {
 	if [ ${fanstatus} -eq 2 ]
 	then
-		echo "fan is stopped"
+		echo "off"
 	else
-		echo "fan is running"
+		echo "on"
 	fi
 }
 
